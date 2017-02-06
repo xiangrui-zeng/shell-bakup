@@ -1,4 +1,4 @@
-# SmartDB Build Script
+# java Build Script
 A script to build Hibiki-SmartDB in one line
 
 Usage:
