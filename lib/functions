@@ -1,0 +1,49 @@
+#!/bin/sh # syntax highlighting only
+
+eval "`cat conf/environment.sh`"
+
+[ -n "$BUILD_WORKDIR" -a \
+  -n "$TARGETDIR" ] || exit 1;
+
+# Set all environment variables that need to be dynamic.
+export DATESTR=`LC_ALL=C date`
+export TODAY=$(date +%Y%m%d%H%M --date="$DATESTR")
+if [ -n "$MYPID" ]; then
+        _MYPID="$MYPID/$$"
+else
+        _MYPID=$$
+fi
+export MYPID=$_MYPID
+
+# A wrapper around sed that accepts a script, a filename, and then prints the diff
+# of the old and new based on the 'sedding' of the script. It then replaces the original
+# input file with the new sedded version.
+polite_sed() {
+  local SCRIPT="$1";
+  local INFILE="$2"
+  [ -n "$SCRIPT" -a -f "$INFILE" ] || return 1;
+  local TMPFILE=`basename $INFILE`.sedded &&
+  sed  "$SCRIPT" "$INFILE" > $TMPFILE &&
+  {
+     echo; echo "Ran a text processing sed script $SCRIPT on $INFILE. The diff follows:"
+     diff -U 6 "$INFILE" "$TMPFILE"
+     cat $TMPFILE > $INFILE
+  } &&
+  return 0;
+}
+
+#convert version to name
+generate_version_name() {
+  echo -n $VERSION | sed 's_^/__' | tr '/' '-'
+}
+
+# to print more noticable messages.
+printb() {
+cat<<EOF | fmt -w110
+
+*************************************************************************************************************
+$@
+EOF
+}
+
+
